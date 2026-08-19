@@ -1,0 +1,1186 @@
+<!DOCTYPE html><!-- build 20260819042333 --><!-- MiFinanza v17 build 20260819035135 -->
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<meta name="theme-color" content="#0F1117"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<title>MiFinanza</title>
+<link rel="manifest" href="manifest.json"/>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap');
+
+:root {
+  --bg:        #0F1117;
+  --surface:   #1A1D27;
+  --surface2:  #222636;
+  --border:    #2E3347;
+  --accent:    #6C63FF;
+  --accent2:   #00D9A3;
+  --danger:    #FF5C5C;
+  --warning:   #FFB347;
+  --text:      #E8EAF0;
+  --text2:     #8B90A7;
+  --text3:     #555B72;
+  --green:     #00D9A3;
+  --red:       #FF5C5C;
+  --radius:    14px;
+  --radius-sm: 8px;
+  --mono:      'JetBrains Mono', monospace;
+  --sans:      'Inter', sans-serif;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+html, body { height:100%; background:var(--bg); color:var(--text); font-family:var(--sans); overflow:hidden; }
+
+/* ── SYNC CODE SCREEN ─────────────────────────────────────────── */
+#sync-screen {
+  position:fixed; inset:0; background:var(--bg);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  z-index:1000; padding:32px;
+}
+.sync-logo { font-size:48px; margin-bottom:16px; }
+.sync-title { font-size:26px; font-weight:700; color:var(--text); margin-bottom:6px; }
+.sync-sub { font-size:14px; color:var(--text2); margin-bottom:40px; text-align:center; }
+.sync-input {
+  width:100%; max-width:340px; background:var(--surface2);
+  border:2px solid var(--border); border-radius:var(--radius);
+  color:var(--text); font-family:var(--mono); font-size:20px;
+  letter-spacing:3px; text-align:center; padding:18px;
+  outline:none; margin-bottom:16px; text-transform:uppercase;
+}
+.sync-input:focus { border-color:var(--accent); }
+.btn-primary {
+  width:100%; max-width:340px; background:var(--accent);
+  color:#fff; border:none; border-radius:var(--radius);
+  padding:16px; font-size:16px; font-weight:600; cursor:pointer;
+  font-family:var(--sans); transition:opacity .2s;
+}
+.btn-primary:active { opacity:.8; }
+.sync-hint { font-size:12px; color:var(--text3); margin-top:16px; text-align:center; max-width:300px; }
+
+/* ── LAYOUT ───────────────────────────────────────────────────── */
+#app { display:none; flex-direction:column; height:100%; }
+#app.visible { display:flex; }
+
+/* ── TOP BAR ──────────────────────────────────────────────────── */
+.topbar {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 20px 12px; background:var(--bg);
+  border-bottom:1px solid var(--border); flex-shrink:0;
+}
+.topbar-title { font-size:18px; font-weight:700; color:var(--text); }
+.topbar-code { font-family:var(--mono); font-size:11px; color:var(--text3);
+  background:var(--surface2); padding:4px 8px; border-radius:6px; }
+.sync-btn { background:var(--surface2); border:1px solid var(--border);
+  color:var(--text2); border-radius:8px; padding:6px 12px; font-size:13px; cursor:pointer; }
+
+/* ── TABS ─────────────────────────────────────────────────────── */
+.tabs {
+  display:flex; background:var(--surface); border-bottom:1px solid var(--border);
+  flex-shrink:0; overflow-x:auto; scrollbar-width:none;
+}
+.tabs::-webkit-scrollbar { display:none; }
+.tab {
+  flex:1; min-width:70px; display:flex; flex-direction:column; align-items:center;
+  padding:10px 4px 8px; cursor:pointer; border-bottom:2px solid transparent;
+  transition:all .2s; color:var(--text3); font-size:10px; font-weight:500;
+  white-space:nowrap; gap:3px;
+}
+.tab.active { color:var(--accent); border-bottom-color:var(--accent); }
+.tab-icon { font-size:18px; }
+
+/* ── CONTENT ──────────────────────────────────────────────────── */
+.content { flex:1; overflow-y:auto; padding:16px; padding-bottom:20px; }
+.panel { display:none; }
+.panel.active { display:block; }
+
+/* ── CARDS ────────────────────────────────────────────────────── */
+.card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--radius); padding:16px; margin-bottom:12px;
+}
+.card-title { font-size:12px; font-weight:600; color:var(--text2);
+  text-transform:uppercase; letter-spacing:.8px; margin-bottom:12px; }
+
+/* ── KPI ROW ──────────────────────────────────────────────────── */
+.kpi-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+.kpi { background:var(--surface2); border-radius:var(--radius-sm); padding:14px; }
+.kpi-label { font-size:11px; color:var(--text2); margin-bottom:4px; }
+.kpi-value { font-family:var(--mono); font-size:18px; font-weight:600; }
+.kpi-value.green { color:var(--green); }
+.kpi-value.red { color:var(--red); }
+.kpi-value.accent { color:var(--accent); }
+.kpi-value.warning { color:var(--warning); }
+
+/* ── LIST ITEMS ───────────────────────────────────────────────── */
+.list-item {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:12px 0; border-bottom:1px solid var(--border);
+}
+.list-item:last-child { border-bottom:none; }
+.item-left { flex:1; }
+.item-name { font-size:14px; font-weight:500; color:var(--text); }
+.item-sub { font-size:11px; color:var(--text2); margin-top:2px; }
+.item-right { text-align:right; }
+.item-value { font-family:var(--mono); font-size:14px; font-weight:600; }
+.item-badge {
+  display:inline-block; font-size:10px; padding:2px 7px;
+  border-radius:20px; margin-top:3px; font-weight:600;
+}
+.badge-green { background:rgba(0,217,163,.15); color:var(--green); }
+.badge-red { background:rgba(255,92,92,.15); color:var(--red); }
+.badge-warn { background:rgba(255,179,71,.15); color:var(--warning); }
+.badge-accent { background:rgba(108,99,255,.15); color:var(--accent); }
+
+/* ── SECTION HEADER ───────────────────────────────────────────── */
+.section-hdr {
+  display:flex; align-items:center; justify-content:space-between;
+  margin-bottom:10px; margin-top:4px;
+}
+.section-hdr h3 { font-size:14px; font-weight:600; color:var(--text); }
+.btn-add {
+  background:var(--accent); color:#fff; border:none; border-radius:8px;
+  padding:6px 14px; font-size:12px; font-weight:600; cursor:pointer;
+}
+.btn-sm {
+  background:var(--surface2); color:var(--text2); border:1px solid var(--border);
+  border-radius:6px; padding:4px 10px; font-size:11px; cursor:pointer;
+}
+
+/* ── PROGRESS BAR ─────────────────────────────────────────────── */
+.progress-wrap { margin-top:6px; }
+.progress-bar {
+  height:5px; background:var(--surface2); border-radius:3px; overflow:hidden;
+}
+.progress-fill { height:100%; border-radius:3px; transition:width .4s; }
+
+/* ── MODAL ────────────────────────────────────────────────────── */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.7);
+  display:flex; align-items:flex-end; justify-content:center;
+  z-index:500; opacity:0; pointer-events:none; transition:opacity .2s;
+}
+.modal-overlay.open { opacity:1; pointer-events:all; }
+.modal {
+  background:var(--surface); border-radius:var(--radius) var(--radius) 0 0;
+  width:100%; max-width:480px; padding:24px 20px 36px;
+  transform:translateY(100%); transition:transform .3s;
+  max-height:90vh; overflow-y:auto;
+}
+.modal-overlay.open .modal { transform:translateY(0); }
+.modal-title { font-size:17px; font-weight:700; margin-bottom:20px; color:var(--text); }
+.field { margin-bottom:14px; }
+.field label { display:block; font-size:12px; color:var(--text2); margin-bottom:5px; font-weight:500; }
+.field input, .field select, .field textarea {
+  width:100%; background:var(--surface2); border:1px solid var(--border);
+  border-radius:var(--radius-sm); color:var(--text); font-family:var(--sans);
+  font-size:15px; padding:12px; outline:none;
+}
+.field input:focus, .field select:focus { border-color:var(--accent); }
+.field select option { background:var(--surface2); }
+.modal-actions { display:flex; gap:10px; margin-top:20px; }
+.btn-cancel {
+  flex:1; background:var(--surface2); color:var(--text2);
+  border:1px solid var(--border); border-radius:var(--radius-sm);
+  padding:14px; font-size:15px; cursor:pointer;
+}
+.btn-save {
+  flex:2; background:var(--accent); color:#fff; border:none;
+  border-radius:var(--radius-sm); padding:14px; font-size:15px;
+  font-weight:600; cursor:pointer;
+}
+
+/* ── CHART ────────────────────────────────────────────────────── */
+.chart-wrap { position:relative; height:200px; margin:8px 0; }
+canvas { width:100% !important; }
+
+/* ── CRYPTO ───────────────────────────────────────────────────── */
+.crypto-item {
+  display:flex; align-items:center; gap:12px;
+  padding:12px 0; border-bottom:1px solid var(--border);
+}
+.crypto-item:last-child { border-bottom:none; }
+.crypto-icon {
+  width:36px; height:36px; border-radius:50%; background:var(--surface2);
+  display:flex; align-items:center; justify-content:center;
+  font-size:13px; font-weight:700; color:var(--accent); flex-shrink:0;
+}
+.crypto-info { flex:1; }
+.crypto-name { font-size:14px; font-weight:600; }
+.crypto-detail { font-size:11px; color:var(--text2); margin-top:2px; }
+.crypto-right { text-align:right; }
+.crypto-value { font-family:var(--mono); font-size:15px; font-weight:600; }
+.crypto-pct { font-size:11px; font-weight:600; margin-top:2px; }
+
+/* ── DEUDORES ─────────────────────────────────────────────────── */
+.deudor-card {
+  background:var(--surface2); border-radius:var(--radius-sm);
+  padding:14px; margin-bottom:10px; cursor:pointer;
+  border:1px solid var(--border);
+}
+.deudor-header { display:flex; justify-content:space-between; align-items:flex-start; }
+.deudor-nombre { font-size:15px; font-weight:600; }
+.deudor-concepto { font-size:12px; color:var(--text2); margin-top:2px; }
+.deudor-saldo { font-family:var(--mono); font-size:16px; font-weight:700; color:var(--red); }
+.deudor-saldo.pagado { color:var(--green); }
+
+/* ── TOAST ────────────────────────────────────────────────────── */
+.toast {
+  position:fixed; bottom:80px; left:50%; transform:translateX(-50%) translateY(20px);
+  background:var(--surface2); border:1px solid var(--border);
+  color:var(--text); padding:10px 20px; border-radius:30px;
+  font-size:13px; font-weight:500; opacity:0;
+  transition:all .3s; pointer-events:none; white-space:nowrap; z-index:999;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+/* ── LOADING ──────────────────────────────────────────────────── */
+.loading { text-align:center; padding:40px; color:var(--text2); font-size:14px; }
+.spinner {
+  width:28px; height:28px; border:3px solid var(--border);
+  border-top-color:var(--accent); border-radius:50%;
+  animation:spin .8s linear infinite; margin:0 auto 12px;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
+
+/* ── ABONOS LIST ──────────────────────────────────────────────── */
+.abono-item {
+  display:flex; justify-content:space-between; align-items:center;
+  padding:8px 12px; background:var(--bg); border-radius:6px; margin-bottom:6px;
+}
+.abono-fecha { font-size:12px; color:var(--text2); }
+.abono-valor { font-family:var(--mono); font-size:13px; font-weight:600; color:var(--green); }
+.abono-del { font-size:11px; color:var(--red); cursor:pointer; padding:2px 6px;
+  background:rgba(255,92,92,.1); border-radius:4px; }
+
+/* ── EMPTY ────────────────────────────────────────────────────── */
+.empty { text-align:center; padding:32px 16px; color:var(--text2); font-size:14px; }
+.empty-icon { font-size:36px; margin-bottom:10px; }
+</style>
+</head>
+<body>
+
+<!-- SYNC SCREEN -->
+<div id="sync-screen">
+  <div class="sync-logo">💰</div>
+  <div class="sync-title">MiFinanza</div>
+  <div class="sync-sub">Ingresa tu código para sincronizar tus datos en todos tus dispositivos</div>
+  <input class="sync-input" id="code-input" maxlength="10" placeholder="MF-XXXX" autocomplete="off" autocorrect="off" spellcheck="false"/>
+  <button class="btn-primary" onclick="entrar()">Entrar</button>
+  <div class="sync-hint">Si es la primera vez, escribe un código nuevo que recuerdes fácilmente. Ej: MF-2024</div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="topbar-title">💰 MiFinanza</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div class="topbar-code" id="topbar-code"></div>
+      <button class="sync-btn" onclick="sincronizar()">↻</button>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab active" onclick="setTab(0)"><div class="tab-icon">📊</div>Resumen</div>
+    <div class="tab" onclick="setTab(1)"><div class="tab-icon">💳</div>Gastos</div>
+    <div class="tab" onclick="setTab(2)"><div class="tab-icon">🤝</div>Deudores</div>
+    <div class="tab" onclick="setTab(3)"><div class="tab-icon">₿</div>Criptos</div>
+  </div>
+
+  <div class="content">
+
+    <!-- PANEL 0: RESUMEN -->
+    <div class="panel active" id="panel-0">
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-label">Ingresos</div><div class="kpi-value green" id="kpi-ingresos">$0</div></div>
+        <div class="kpi"><div class="kpi-label">Gastos</div><div class="kpi-value red" id="kpi-gastos">$0</div></div>
+        <div class="kpi"><div class="kpi-label">Saldo</div><div class="kpi-value" id="kpi-saldo">$0</div></div>
+        <div class="kpi"><div class="kpi-label">Deuda Total</div><div class="kpi-value warning" id="kpi-deuda">$0</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Distribución de gastos</div>
+        <div class="chart-wrap"><canvas id="chart-gastos"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Portafolio Cripto</div>
+        <div class="kpi-grid" style="margin-bottom:0">
+          <div class="kpi"><div class="kpi-label">Valor Actual</div><div class="kpi-value accent" id="kpi-cripto-val">$0</div></div>
+          <div class="kpi"><div class="kpi-label">Resultado</div><div class="kpi-value" id="kpi-cripto-res">$0</div></div>
+        </div>
+      </div>
+      <div class="card" id="card-vencimientos">
+        <div class="card-title">⚠️ Próximos vencimientos</div>
+        <div id="lista-vencimientos"></div>
+      </div>
+    </div>
+
+    <!-- PANEL 1: GASTOS E INGRESOS -->
+    <div class="panel" id="panel-1">
+      <div class="card">
+        <div class="section-hdr">
+          <h3>📥 Ingresos</h3>
+          <button class="btn-add" onclick="abrirModal('ingreso')">+ Agregar</button>
+        </div>
+        <div id="lista-ingresos"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+      </div>
+      <div class="card">
+        <div class="section-hdr">
+          <h3>📤 Gastos</h3>
+          <button class="btn-add" onclick="abrirModal('gasto')">+ Agregar</button>
+        </div>
+        <div id="lista-gastos"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+      </div>
+    </div>
+
+    <!-- PANEL 2: DEUDORES -->
+    <div class="panel" id="panel-2">
+      <div class="section-hdr">
+        <h3>🤝 Personas que me deben</h3>
+        <button class="btn-add" onclick="abrirModalDeudor()">+ Agregar</button>
+      </div>
+      <div id="lista-deudores"><div class="loading"><div class="spinner"></div>Cargando...</div></div>
+    </div>
+
+    <!-- PANEL 3: CRIPTOS -->
+    <div class="panel" id="panel-3">
+      <div class="kpi-grid">
+        <div class="kpi"><div class="kpi-label">Capital Invertido</div><div class="kpi-value accent" id="c-capital">$0</div></div>
+        <div class="kpi"><div class="kpi-label">Valor Actual</div><div class="kpi-value green" id="c-valor">$0</div></div>
+        <div class="kpi"><div class="kpi-label">Resultado</div><div class="kpi-value" id="c-resultado">$0</div></div>
+        <div class="kpi"><div class="kpi-label">Rendimiento</div><div class="kpi-value" id="c-pct">0%</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Distribución del portafolio</div>
+        <div class="chart-wrap"><canvas id="chart-cripto"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="section-hdr">
+          <h3>Monedas</h3>
+          <button class="btn-add" onclick="abrirModalCripto()">+ Agregar</button>
+        </div>
+        <div id="lista-cripto"></div>
+      </div>
+      <div class="card">
+        <div class="section-hdr">
+          <h3>Transacciones</h3>
+          <button class="btn-add" onclick="abrirModalTx()">+ Nueva</button>
+        </div>
+        <div id="lista-tx"></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /app -->
+
+<!-- MODALS -->
+<div class="modal-overlay" id="modal-finanza">
+  <div class="modal">
+    <div class="modal-title" id="modal-finanza-title">Agregar</div>
+    <input type="hidden" id="mf-id"/>
+    <input type="hidden" id="mf-cat"/>
+    <div class="field"><label>Nombre</label><input id="mf-nombre" placeholder="Ej: Nómina, Arriendo..."/></div>
+    <div class="field"><label>Valor mensual ($COP)</label><input id="mf-valor" type="number" placeholder="0"/></div>
+    <div class="field" id="mf-deuda-wrap" style="display:none">
+      <label>Deuda original ($COP)</label><input id="mf-deuda" type="number" placeholder="0"/>
+    </div>
+    <div class="field" id="mf-dia-wrap" style="display:none">
+      <label>Día de pago (1-31)</label><input id="mf-dia" type="number" min="1" max="31" placeholder="15"/>
+    </div>
+    <div id="mf-abonos-wrap" style="display:none">
+      <div class="card-title" style="margin-bottom:8px">Abonos registrados</div>
+      <div id="mf-abonos-lista"></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <input id="mf-ab-fecha" type="date" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px;font-size:14px;outline:none"/>
+        <input id="mf-ab-valor" type="number" placeholder="Valor abono" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px;font-size:14px;outline:none"/>
+        <button onclick="agregarAbono()" style="background:var(--accent2);color:#000;border:none;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer">+</button>
+      </div>
+    </div>
+    <div id="mf-fecha-pago-wrap" style="display:none">
+      <div class="field"><label>Fecha en que pagué</label><input id="mf-fecha-pago" type="date"/></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="cerrarModal('modal-finanza')">Cancelar</button>
+      <button id="btn-eliminar-finanza" style="display:none;flex:1;background:#FF5C5C;color:#fff;border:none;border-radius:8px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;" onclick="eliminarFinanza()">🗑 Eliminar</button>
+      <button class="btn-save" onclick="guardarFinanza()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-deudor">
+  <div class="modal">
+    <div class="modal-title" id="modal-deudor-title">Agregar deudor</div>
+    <input type="hidden" id="md-id"/>
+    <div class="field"><label>Nombre</label><input id="md-nombre" placeholder="Nombre"/></div>
+    <div class="field"><label>Concepto</label><input id="md-concepto" placeholder="Motivo del préstamo"/></div>
+    <div class="field"><label>Deuda original ($COP)</label><input id="md-deuda" type="number" placeholder="0"/></div>
+    <div class="field"><label>Cuota acordada ($COP)</label><input id="md-cuota" type="number" placeholder="0"/></div>
+    <div class="field"><label>Fecha próximo pago</label><input id="md-fecha" type="date"/></div>
+    <div>
+      <div class="card-title" style="margin-bottom:8px">Abonos recibidos</div>
+      <div id="md-abonos-lista"></div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <input id="md-ab-fecha" type="date" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px;font-size:14px;outline:none"/>
+        <input id="md-ab-valor" type="number" placeholder="Valor abono" style="flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);padding:10px;font-size:14px;outline:none"/>
+        <button onclick="agregarAbonoDeudor()" style="background:var(--accent2);color:#000;border:none;border-radius:8px;padding:10px 14px;font-weight:700;cursor:pointer">+</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="cerrarModal('modal-deudor')">Cancelar</button>
+      <button id="btn-eliminar-deudor" style="display:none;flex:1;background:#FF5C5C;color:#fff;border:none;border-radius:8px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;" onclick="eliminarDeudor()">🗑 Eliminar</button>
+      <button class="btn-save" onclick="guardarDeudor()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-cripto">
+  <div class="modal">
+    <div class="modal-title">Editar moneda</div>
+    <input type="hidden" id="mc-id"/>
+    <div class="field"><label>Moneda</label><input id="mc-moneda" placeholder="BTC, ETH..."/></div>
+    <div class="field"><label>CoinGecko ID</label><input id="mc-cgid" placeholder="bitcoin, ethereum..."/></div>
+    <div class="field"><label>Valor actual en USD (lo que tienes hoy)</label><input id="mc-valor" type="number" placeholder="0"/></div>
+    <div class="field"><label>Precio de respaldo USD</label><input id="mc-precio" type="number" placeholder="0"/></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="cerrarModal('modal-cripto')">Cancelar</button>
+      <button class="btn-save" onclick="guardarCripto()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-tx">
+  <div class="modal">
+    <div class="modal-title">Nueva transacción</div>
+    <div class="field"><label>Fecha</label><input id="tx-fecha" type="date"/></div>
+    <div class="field"><label>Tipo</label>
+      <select id="tx-tipo"><option value="COMPRA">COMPRA</option><option value="VENTA">VENTA</option></select>
+    </div>
+    <div class="field"><label>Moneda</label><input id="tx-moneda" placeholder="BTC"/></div>
+    <div class="field"><label>USD Invertido/Recibido</label><input id="tx-usd" type="number" placeholder="0"/></div>
+    <div class="field"><label>Precio unitario USD</label><input id="tx-precio" type="number" placeholder="0"/></div>
+    <div class="field"><label>Nota</label><input id="tx-nota" placeholder="Opcional"/></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="cerrarModal('modal-tx')">Cancelar</button>
+      <button class="btn-save" onclick="guardarTx()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<script>
+// ── CONFIG ─────────────────────────────────────────────────────
+const SUPA_URL = 'https://ifdcwrajrirfromezbdq.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlmZGN3cmFqcmlyZnJvbWV6YmRxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQwNjA0NTQsImV4cCI6MjA5OTYzNjQ1NH0.4M0UirliH6YLexwWdlHk58X7YG5r08sXBAzxh0I7A94';
+
+// ── STATE ───────────────────────────────────────────────────────
+let userCode = '';
+let finanzas = [];
+let deudores = [];
+let criptos  = [];
+let txs      = [];
+let chartGastos = null;
+let chartCripto = null;
+let editingAbonos = [];
+let editingAbonosDeudor = [];
+
+// ── SUPABASE FETCH ──────────────────────────────────────────────
+async function sb(table, method='GET', body=null, id=null) {
+  let url = `${SUPA_URL}/rest/v1/${table}?user_code=ilike.${userCode}&limit=1000&offset=0`;
+  if (id) url = `${SUPA_URL}/rest/v1/${table}?id=eq.${id}`;
+  const opts = {
+    method, headers: {
+      'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`,
+      'Content-Type': 'application/json', 'Prefer': 'return=representation',
+      'Accept': 'application/json',
+      'Range-Unit': 'items',
+      'Range': '0-999'
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(url, opts);
+  if (!r.ok) { const e = await r.text(); console.error('SB error:', table, e); throw new Error(e); }
+  const data = await r.json();
+  console.log('SB ok:', table, data.length, 'filas');
+  return data;
+}
+
+async function sbUpsert(table, body) {
+  const url = `${SUPA_URL}/rest/v1/${table}`;
+  const r = await fetch(url, {
+    method: 'POST', headers: {
+      'apikey': SUPA_KEY, 'Authorization': `Bearer ${SUPA_KEY}`,
+      'Content-Type': 'application/json', 'Prefer': 'resolution=merge-duplicates,return=representation'
+    }, body: JSON.stringify(body)
+  });
+  if (!r.ok) { const e = await r.text(); throw new Error(e); }
+  return r.json();
+}
+
+async function sbDelete(table, id) {
+  const url = `${SUPA_URL}/rest/v1/${table}?id=eq.${id}`;
+  await fetch(url, { method:'DELETE', headers: { 'apikey':SUPA_KEY, 'Authorization':`Bearer ${SUPA_KEY}` }});
+}
+
+// ── ENTRADA ─────────────────────────────────────────────────────
+async function entrar() {
+  const code = document.getElementById('code-input').value.trim().toUpperCase();
+  if (!code || code.length < 2) { toast('Ingresa un código válido'); return; }
+  userCode = code;
+  localStorage.setItem('mf_code', code);
+  document.getElementById('topbar-code').textContent = code;
+  document.getElementById('sync-screen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+  await cargarTodo();
+}
+
+document.getElementById('code-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') entrar();
+});
+
+// ── TABS ─────────────────────────────────────────────────────────
+function setTab(i) {
+  document.querySelectorAll('.tab').forEach((t,j) => t.classList.toggle('active', i===j));
+  document.querySelectorAll('.panel').forEach((p,j) => p.classList.toggle('active', i===j));
+}
+
+// ── LOAD ALL ─────────────────────────────────────────────────────
+async function cargarTodo() {
+  try {
+    [finanzas, deudores, criptos, txs] = await Promise.all([
+      sb('finanzas_config'), sb('deudores'),
+      sb('cripto_portafolio'), sb('cripto_transacciones')
+    ]);
+    console.log('Criptos cargadas:', criptos.length);
+  } catch(e) {
+    // Tablas no existen aún — datos vacíos
+    finanzas=[]; deudores=[]; criptos=[]; txs=[];
+  }
+  await cargarPreciosLive();
+  renderTodo();
+}
+
+async function sincronizar() {
+  toast('Sincronizando...');
+  await cargarTodo();
+  toast('✓ Sincronizado');
+}
+
+// ── PRECIOS LIVE (CoinGecko) ──────────────────────────────────────
+async function cargarPreciosLive() {
+  const ids = criptos.filter(c=>c.coingecko_id).map(c=>c.coingecko_id).join(',');
+  if (!ids) return;
+  try {
+    const r = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd`);
+    const data = await r.json();
+    criptos.forEach(c => {
+      if (c.coingecko_id && data[c.coingecko_id]) {
+        c._precio_live = data[c.coingecko_id].usd;
+      }
+    });
+  } catch(e) { /* usa precio respaldo */ }
+}
+
+// ── RENDER TODO ───────────────────────────────────────────────────
+function renderTodo() {
+  renderResumen();
+  renderFinanzas();
+  renderDeudores();
+  renderCriptos();
+}
+
+// ── FORMATO ───────────────────────────────────────────────────────
+const COP = v => '$' + Math.round(v).toLocaleString('es-CO');
+
+// Verifica si la fecha de pago es del mes actual
+function pagadoEsteMes(fechaStr) {
+  if (!fechaStr) return false;
+  const hoy = new Date();
+  const pago = new Date(fechaStr);
+  return pago.getMonth() === hoy.getMonth() && pago.getFullYear() === hoy.getFullYear();
+}
+const USD = v => '$' + (v||0).toLocaleString('en-US', {minimumFractionDigits:2,maximumFractionDigits:2});
+const pct = v => (v>=0?'+':'')+v.toFixed(1)+'%';
+const uid = () => Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+const fmtDate = d => d ? new Date(d+'T12:00:00').toLocaleDateString('es-CO',{day:'2-digit',month:'short'}) : '—';
+
+// ── RESUMEN ───────────────────────────────────────────────────────
+function renderResumen() {
+  const ingresos = finanzas.filter(f=>f.categoria==='ingreso');
+  const gastos   = finanzas.filter(f=>f.categoria==='gasto');
+  const totalIng = ingresos.reduce((a,f)=>a+Number(f.valor_mensual||0),0);
+  const totalGas = gastos.reduce((a,f)=>a+Number(f.valor_mensual||0),0);
+  const saldo    = totalIng - totalGas;
+  const deudaTotal = gastos.reduce((a,f)=>{
+    const abonados = (f.abonos||[]).reduce((s,ab)=>s+Number(ab.valor||0),0);
+    return a + Math.max(0, Number(f.deuda_original||0) - abonados);
+  },0);
+
+  document.getElementById('kpi-ingresos').textContent = COP(totalIng);
+  document.getElementById('kpi-gastos').textContent   = COP(totalGas);
+  const sEl = document.getElementById('kpi-saldo');
+  sEl.textContent = COP(saldo);
+  sEl.className = 'kpi-value ' + (saldo>=0?'green':'red');
+  document.getElementById('kpi-deuda').textContent = COP(deudaTotal);
+
+  // Cripto KPIs
+  let cCapital=0, cValor=0;
+  criptos.forEach(c => {
+    const precio = c._precio_live || c.precio_respaldo || 0;
+    const usdComp = txs.filter(t=>t.moneda===c.moneda&&t.tipo==='COMPRA').reduce((a,t)=>a+Number(t.usd_amount||0),0);
+    const usdVent = txs.filter(t=>t.moneda===c.moneda&&t.tipo==='VENTA').reduce((a,t)=>a+Number(t.usd_amount||0),0);
+    cCapital += usdComp - usdVent;
+    cValor += Number(c.valor_hoy_usd||0);
+  });
+  document.getElementById('kpi-cripto-val').textContent = USD(cValor);
+  const res = cValor - cCapital;
+  const resEl = document.getElementById('kpi-cripto-res');
+  resEl.textContent = (res>=0?'+':'')+USD(res);
+  resEl.className = 'kpi-value '+(res>=0?'green':'red');
+
+  // Chart gastos
+  if (chartGastos) chartGastos.destroy();
+  const gasNombres = gastos.slice(0,8).map(g=>g.nombre);
+  const gasVals    = gastos.slice(0,8).map(g=>g.valor_mensual||0);
+  if (gasVals.length) {
+    chartGastos = new Chart(document.getElementById('chart-gastos'), {
+      type:'doughnut',
+      data: { labels:gasNombres, datasets:[{data:gasVals,
+        backgroundColor:['#6C63FF','#00D9A3','#FF5C5C','#FFB347','#4ECDC4','#A8E6CF','#FF8B94','#B19CD9'],
+        borderWidth:0 }]},
+      options:{ plugins:{ legend:{ position:'bottom', labels:{ color:'#8B90A7', font:{size:11}, boxWidth:12 }}},
+        cutout:'68%', responsive:true, maintainAspectRatio:false }
+    });
+  }
+
+  // Vencimientos próximos (15 días)
+  const hoy = new Date();
+
+  const venc = gastos.filter(g => {
+    if (!g.fecha_base_dia) return false;
+
+    // Calcular la próxima fecha real de vencimiento
+    let proxFechaVenc;
+    if (pagadoEsteMes(g.fecha_pago_registro)) {
+      // Ya pagó este mes → próximo vencimiento es mes siguiente
+      const p = new Date(g.fecha_pago_registro);
+      proxFechaVenc = new Date(p.getFullYear(), p.getMonth()+1, g.fecha_base_dia);
+    } else {
+      // No ha pagado → vencimiento es este mes
+      proxFechaVenc = new Date(hoy.getFullYear(), hoy.getMonth(), g.fecha_base_dia);
+      // Si ya pasó este mes, usar el próximo
+      if (proxFechaVenc < hoy) {
+        proxFechaVenc = new Date(hoy.getFullYear(), hoy.getMonth()+1, g.fecha_base_dia);
+      }
+    }
+
+    const diff = (proxFechaVenc - hoy) / 86400000;
+    g._proxFechaVenc = proxFechaVenc;
+    return diff >= 0 && diff <= 15;
+  }).sort((a,b)=>a._proxFechaVenc - b._proxFechaVenc);
+
+  const lvEl = document.getElementById('lista-vencimientos');
+  if (!venc.length) {
+    lvEl.innerHTML = '<div style="color:var(--text2);font-size:13px;padding:4px 0">Sin vencimientos próximos 🎉</div>';
+  } else {
+    lvEl.innerHTML = venc.map(g=>{
+      const diff = Math.round((g._proxFechaVenc - hoy) / 86400000);
+      const pagado = pagadoEsteMes(g.fecha_pago_registro);
+      const badge = pagado
+        ? '<div class="item-badge badge-green">✓ Pagado — próx en '+diff+'d</div>'
+        : diff <= 3
+          ? '<div class="item-badge badge-red">🔴 Vence en '+diff+'d</div>'
+          : '<div class="item-badge badge-warn">⚠️ En '+diff+'d</div>';
+      return `<div class="list-item">
+        <div class="item-left"><div class="item-name">${g.nombre}</div>
+        <div class="item-sub">📆 ${g._proxFechaVenc.toLocaleDateString('es-CO',{day:'2-digit',month:'short'})}</div></div>
+        <div class="item-right"><div class="item-value">${COP(g.valor_mensual||0)}</div>
+        ${badge}</div>
+      </div>`;
+    }).join('');
+  }
+}
+
+// ── FINANZAS ──────────────────────────────────────────────────────
+function renderFinanzas() {
+  const ingresos = finanzas.filter(f=>f.categoria==='ingreso');
+  const gastos   = finanzas.filter(f=>f.categoria==='gasto');
+
+  const elIng = document.getElementById('lista-ingresos');
+  if (!ingresos.length) {
+    elIng.innerHTML = '<div class="empty"><div class="empty-icon">📥</div>Sin ingresos registrados</div>';
+  } else {
+    elIng.innerHTML = ingresos.map(f=>`
+      <div class="list-item" onclick="editarFinanza('${f.id}')">
+        <div class="item-left"><div class="item-name">${f.nombre}</div></div>
+        <div class="item-right">
+          <div class="item-value green">${COP(f.valor_mensual||0)}</div>
+          ${f.fecha_pago_registro ? `<div class="item-badge badge-green">✓ Pagado</div>` : ''}
+        </div>
+      </div>`).join('');
+  }
+
+  const elGas = document.getElementById('lista-gastos');
+  if (!gastos.length) {
+    elGas.innerHTML = '<div class="empty"><div class="empty-icon">📤</div>Sin gastos registrados</div>';
+  } else {
+    elGas.innerHTML = gastos.map(f=>{
+      const abonados = (f.abonos||[]).reduce((a,ab)=>a+Number(ab.valor||0),0);
+      const deudaAct = Math.max(0, Number(f.deuda_original||0) - abonados);
+      const pagado   = pagadoEsteMes(f.fecha_pago_registro);
+      const proxFecha = proximaFecha(f);
+      const dias = proxFecha ? diasHasta(proxFecha) : null;
+      const badge = pagado
+        ? '<div class="item-badge badge-green">✓ Pagado</div>'
+        : dias !== null && dias <= 3
+          ? `<div class="item-badge badge-red">🔴 Vence en ${dias}d</div>`
+          : dias !== null && dias <= 10
+            ? `<div class="item-badge badge-warn">⚠️ En ${dias}d</div>`
+            : '';
+      return `<div class="list-item" onclick="editarFinanza('${f.id}')">
+        <div class="item-left">
+          <div class="item-name">${f.nombre}</div>
+          <div class="item-sub">${proxFecha ? '📆 Próx: '+fmtDate(proxFecha) : ''}${f.deuda_original ? ' · Deuda: '+COP(deudaAct) : ''}</div>
+        </div>
+        <div class="item-right">
+          <div class="item-value">${COP(f.valor_mensual||0)}</div>
+          ${badge}
+        </div>
+      </div>`;
+    }).join('');
+  }
+}
+
+function proximaFecha(f) {
+  if (!f.fecha_base_dia) return null;
+  const hoy = new Date();
+  if (pagadoEsteMes(f.fecha_pago_registro)) {
+    // Pagado este mes → próximo es mes siguiente
+    const p = new Date(f.fecha_pago_registro);
+    return new Date(p.getFullYear(), p.getMonth()+1, f.fecha_base_dia).toISOString().slice(0,10);
+  } else {
+    // No pagado → mostrar vencimiento de este mes
+    let d = new Date(hoy.getFullYear(), hoy.getMonth(), f.fecha_base_dia);
+    if (d < hoy) d = new Date(hoy.getFullYear(), hoy.getMonth()+1, f.fecha_base_dia);
+    return d.toISOString().slice(0,10);
+  }
+}
+
+function diasHasta(fechaStr) {
+  return Math.round((new Date(fechaStr+'T12:00:00') - new Date()) / 86400000);
+}
+
+// ── DEUDORES ──────────────────────────────────────────────────────
+function renderDeudores() {
+  const el = document.getElementById('lista-deudores');
+  if (!deudores.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">🤝</div>Sin deudores registrados</div>'; return;
+  }
+  el.innerHTML = deudores.map(d=>{
+    const abonados = (d.abonos||[]).reduce((a,ab)=>a+Number(ab.valor||0),0);
+    const saldo = Math.max(0, Number(d.deuda_original||0) - abonados);
+    const pctPag = d.deuda_original ? Math.min(100, abonados/d.deuda_original*100) : 0;
+    return `<div class="deudor-card" onclick="editarDeudor('${d.id}')">
+      <div class="deudor-header">
+        <div><div class="deudor-nombre">${d.nombre}</div>
+        <div class="deudor-concepto">${d.concepto||''}</div></div>
+        <div class="deudor-saldo ${saldo===0?'pagado':''}">${COP(saldo)}</div>
+      </div>
+      <div class="progress-wrap">
+        <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text2);margin-bottom:4px">
+          <span>Pagado: ${COP(abonados)}</span><span>${pctPag.toFixed(0)}%</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" style="width:${pctPag}%;background:${saldo===0?'var(--green)':'var(--accent)'}"></div>
+        </div>
+      </div>
+      ${d.fecha_proximo_pago ? `<div style="font-size:11px;color:var(--text2);margin-top:6px">📅 Próx pago: ${fmtDate(d.fecha_proximo_pago)}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ── CRIPTOS ───────────────────────────────────────────────────────
+function renderCriptos() {
+  let capital=0, valorTotal=0;
+  const colors = ['#6C63FF','#00D9A3','#FF5C5C','#FFB347','#4ECDC4','#A8E6CF','#FF8B94','#B19CD9','#85C1E9','#F8C471'];
+
+  const el = document.getElementById('lista-cripto');
+  if (!criptos.length) {
+    el.innerHTML = '<div class="empty"><div class="empty-icon">₿</div>Sin monedas registradas</div>';
+  } else {
+    el.innerHTML = criptos.map((c,i)=>{
+      const precio  = c._precio_live || c.precio_respaldo || 0;
+      const usdComp = txs.filter(t=>t.moneda===c.moneda&&t.tipo==='COMPRA').reduce((a,t)=>a+Number(t.usd_amount||0),0);
+      const usdVent = txs.filter(t=>t.moneda===c.moneda&&t.tipo==='VENTA').reduce((a,t)=>a+Number(t.usd_amount||0),0);
+      const cap = usdComp - usdVent;
+
+      // Valor actual desde Supabase (actualizado manualmente o por SQL)
+      const val = Number(c.valor_hoy_usd||0);
+      const res = val - cap;
+      const pctR = cap ? res/cap*100 : 0;
+      capital += cap; valorTotal += val;
+      return `<div class="crypto-item" onclick="editarCripto('${c.id}')">
+        <div class="crypto-icon" style="color:${colors[i%colors.length]}">${c.moneda.slice(0,3)}</div>
+        <div class="crypto-info">
+          <div class="crypto-name">${c.moneda}</div>
+          <div class="crypto-detail">Precio: ${USD(precio)} ${c._precio_live?'🟢 Live':'⚪ Respaldo'}</div>
+        </div>
+        <div class="crypto-right">
+          <div class="crypto-value">${USD(val)}</div>
+          <div class="crypto-pct" style="color:${pctR>=0?'var(--green)':'var(--red)'}">${pct(pctR)}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  const res = valorTotal - capital;
+  const pctR = capital ? res/capital*100 : 0;
+  document.getElementById('c-capital').textContent  = USD(capital);
+  document.getElementById('c-valor').textContent    = USD(valorTotal);
+  const resEl = document.getElementById('c-resultado');
+  resEl.textContent = (res>=0?'+':'')+USD(res);
+  resEl.className = 'kpi-value '+(res>=0?'green':'red');
+  const pEl = document.getElementById('c-pct');
+  pEl.textContent = pct(pctR);
+  pEl.className = 'kpi-value '+(pctR>=0?'green':'red');
+
+  // Chart
+  if (chartCripto) chartCripto.destroy();
+  if (criptos.length) {
+    chartCripto = new Chart(document.getElementById('chart-cripto'), {
+      type:'doughnut',
+      data:{ labels:criptos.map(c=>c.moneda), datasets:[{
+        data:criptos.map(c=>c.valor_hoy_usd||0),
+        backgroundColor:colors, borderWidth:0 }]},
+      options:{ plugins:{ legend:{ position:'bottom', labels:{ color:'#8B90A7', font:{size:11}, boxWidth:12 }}},
+        cutout:'65%', responsive:true, maintainAspectRatio:false }
+    });
+  }
+
+  // Transacciones (últimas 20)
+  const txEl = document.getElementById('lista-tx');
+  const sorted = [...txs].sort((a,b)=>new Date(b.fecha)-new Date(a.fecha)).slice(0,20);
+  if (!sorted.length) {
+    txEl.innerHTML = '<div class="empty"><div class="empty-icon">📋</div>Sin transacciones</div>';
+  } else {
+    txEl.innerHTML = sorted.map(t=>`
+      <div class="list-item">
+        <div class="item-left">
+          <div class="item-name">${t.tipo} ${t.moneda}</div>
+          <div class="item-sub">${fmtDate(t.fecha)}${t.nota?' · '+t.nota:''}</div>
+        </div>
+        <div class="item-right">
+          <div class="item-value ${t.tipo==='COMPRA'?'red':'green'}">${t.tipo==='COMPRA'?'-':'+'} ${USD(t.usd_amount)}</div>
+          <div class="item-badge ${t.tipo==='COMPRA'?'badge-red':'badge-green'}">${t.tipo}</div>
+        </div>
+      </div>`).join('');
+  }
+}
+
+// ── MODALES FINANZA ───────────────────────────────────────────────
+function abrirModal(cat) {
+  editingAbonos = [];
+  document.getElementById('btn-eliminar-finanza').style.display = 'none';
+  document.getElementById('mf-id').value = '';
+  document.getElementById('mf-cat').value = cat;
+  document.getElementById('mf-nombre').value = '';
+  document.getElementById('mf-valor').value = '';
+  document.getElementById('mf-deuda').value = '';
+  document.getElementById('mf-dia').value = '';
+  document.getElementById('mf-fecha-pago').value = '';
+  document.getElementById('mf-ab-fecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('mf-ab-valor').value = '';
+  document.getElementById('modal-finanza-title').textContent = cat==='ingreso'?'Agregar ingreso':'Agregar gasto';
+  document.getElementById('mf-deuda-wrap').style.display = cat==='gasto'?'':'none';
+  document.getElementById('mf-dia-wrap').style.display   = cat==='gasto'?'':'none';
+  document.getElementById('mf-abonos-wrap').style.display = cat==='gasto'?'':'none';
+  document.getElementById('mf-fecha-pago-wrap').style.display = cat==='gasto'?'':'none';
+  renderAbonosList();
+  document.getElementById('modal-finanza').classList.add('open');
+}
+
+function editarFinanza(id) {
+  const f = finanzas.find(x=>x.id===id); if(!f) return;
+  editingAbonos = JSON.parse(JSON.stringify(f.abonos||[]));
+  document.getElementById('btn-eliminar-finanza').style.display = 'flex';
+  document.getElementById('mf-id').value = f.id;
+  document.getElementById('mf-cat').value = f.categoria;
+  document.getElementById('mf-nombre').value = f.nombre;
+  document.getElementById('mf-valor').value = f.valor_mensual||0;
+  document.getElementById('mf-deuda').value = f.deuda_original||'';
+  document.getElementById('mf-dia').value = f.fecha_base_dia||'';
+  document.getElementById('mf-fecha-pago').value = f.fecha_pago_registro ? f.fecha_pago_registro.slice(0,10) : '';
+  document.getElementById('mf-ab-fecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('mf-ab-valor').value = '';
+  const esGasto = f.categoria==='gasto';
+  document.getElementById('modal-finanza-title').textContent = f.nombre;
+  document.getElementById('mf-deuda-wrap').style.display = esGasto?'':'none';
+  document.getElementById('mf-dia-wrap').style.display   = esGasto?'':'none';
+  document.getElementById('mf-abonos-wrap').style.display = esGasto?'':'none';
+  document.getElementById('mf-fecha-pago-wrap').style.display = esGasto?'':'none';
+  renderAbonosList();
+  document.getElementById('modal-finanza').classList.add('open');
+}
+
+function renderAbonosList() {
+  const el = document.getElementById('mf-abonos-lista');
+  if (!editingAbonos.length) { el.innerHTML = '<div style="color:var(--text3);font-size:12px;margin-bottom:6px">Sin abonos registrados</div>'; return; }
+  el.innerHTML = editingAbonos.map((ab,i)=>`
+    <div class="abono-item">
+      <span class="abono-fecha">${fmtDate(ab.fecha)}</span>
+      <span class="abono-valor">${COP(ab.valor)}</span>
+      <span class="abono-del" onclick="borrarAbono(${i})">✕</span>
+    </div>`).join('');
+}
+
+function agregarAbono() {
+  const fecha = document.getElementById('mf-ab-fecha').value;
+  const valor = parseFloat(document.getElementById('mf-ab-valor').value);
+  if (!fecha || !valor) { toast('Ingresa fecha y valor'); return; }
+  editingAbonos.push({fecha, valor});
+  document.getElementById('mf-ab-valor').value = '';
+  renderAbonosList();
+}
+
+function borrarAbono(i) { editingAbonos.splice(i,1); renderAbonosList(); }
+
+async function eliminarFinanza() {
+  const id = document.getElementById('mf-id').value;
+  const nombre = document.getElementById('mf-nombre').value;
+  if (!id) return;
+  if (!confirm(`¿Eliminar "${nombre}"? Esta acción no se puede deshacer.`)) return;
+  try {
+    await sbDelete('finanzas_config', id);
+    finanzas = finanzas.filter(f=>f.id!==id);
+    cerrarModal('modal-finanza');
+    renderTodo();
+    toast(`🗑 "${nombre}" eliminado`);
+  } catch(e) { toast('Error: '+e.message); }
+}
+
+async function guardarFinanza() {
+  const id     = document.getElementById('mf-id').value || uid();
+  const cat    = document.getElementById('mf-cat').value;
+  const nombre = document.getElementById('mf-nombre').value.trim();
+  const valor  = parseFloat(document.getElementById('mf-valor').value)||0;
+  const dia    = parseInt(document.getElementById('mf-dia').value)||null;
+  const fechaPago = document.getElementById('mf-fecha-pago').value || null;
+  if (!nombre) { toast('Escribe un nombre'); return; }
+
+  // Proteger deuda original: si ya existía un valor guardado, no pisarlo con 0
+  const existente = finanzas.find(f=>f.id===id);
+  const deudaInput = parseFloat(document.getElementById('mf-deuda').value);
+  const deuda = !isNaN(deudaInput) && deudaInput > 0
+    ? deudaInput
+    : (existente ? existente.deuda_original || 0 : 0);
+
+  // Capturar abono pendiente si hay algo escrito
+  const abFecha = document.getElementById('mf-ab-fecha').value;
+  const abValor = parseFloat(document.getElementById('mf-ab-valor').value);
+  if (abFecha && abValor > 0) {
+    editingAbonos.push({fecha: abFecha, valor: abValor});
+    document.getElementById('mf-ab-valor').value = '';
+  }
+
+  const obj = { id, user_code:userCode, categoria:cat, nombre, valor_mensual:valor,
+    deuda_original:deuda, fecha_base_dia:dia, abonos:editingAbonos,
+    fecha_pago_registro:fechaPago, updated_at:new Date().toISOString() };
+  try {
+    await sbUpsert('finanzas_config', obj);
+    const idx = finanzas.findIndex(f=>f.id===id);
+    if (idx>=0) finanzas[idx]=obj; else finanzas.push(obj);
+    cerrarModal('modal-finanza'); renderTodo(); toast('✓ Guardado');
+  } catch(e) { toast('Error: '+e.message); }
+}
+
+// ── MODALES DEUDOR ────────────────────────────────────────────────
+function abrirModalDeudor() {
+  editingAbonosDeudor = [];
+  document.getElementById('btn-eliminar-deudor').style.display = 'none';
+  document.getElementById('md-id').value = '';
+  ['md-nombre','md-concepto','md-deuda','md-cuota'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('md-fecha').value = '';
+  document.getElementById('md-ab-fecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('md-ab-valor').value = '';
+  document.getElementById('modal-deudor-title').textContent = 'Agregar deudor';
+  renderAbonosDeudorList();
+  document.getElementById('modal-deudor').classList.add('open');
+}
+
+function editarDeudor(id) {
+  const d = deudores.find(x=>x.id===id); if(!d) return;
+  editingAbonosDeudor = JSON.parse(JSON.stringify(d.abonos||[]));
+  document.getElementById('btn-eliminar-deudor').style.display = 'flex';
+  document.getElementById('md-id').value = d.id;
+  document.getElementById('md-nombre').value = d.nombre;
+  document.getElementById('md-concepto').value = d.concepto||'';
+  document.getElementById('md-deuda').value = d.deuda_original||0;
+  document.getElementById('md-cuota').value = d.cuota_acordada||'';
+  document.getElementById('md-fecha').value = d.fecha_proximo_pago||'';
+  document.getElementById('md-ab-fecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('md-ab-valor').value = '';
+  document.getElementById('modal-deudor-title').textContent = d.nombre;
+  renderAbonosDeudorList();
+  document.getElementById('modal-deudor').classList.add('open');
+}
+
+function renderAbonosDeudorList() {
+  const el = document.getElementById('md-abonos-lista');
+  if (!editingAbonosDeudor.length) { el.innerHTML = '<div style="color:var(--text3);font-size:12px;margin-bottom:6px">Sin abonos registrados</div>'; return; }
+  el.innerHTML = editingAbonosDeudor.map((ab,i)=>`
+    <div class="abono-item">
+      <span class="abono-fecha">${fmtDate(ab.fecha)}</span>
+      <span class="abono-valor">${COP(ab.valor)}</span>
+      <span class="abono-del" onclick="borrarAbonoDeudor(${i})">✕</span>
+    </div>`).join('');
+}
+
+function agregarAbonoDeudor() {
+  const fecha = document.getElementById('md-ab-fecha').value;
+  const valor = parseFloat(document.getElementById('md-ab-valor').value);
+  if (!fecha || !valor) { toast('Ingresa fecha y valor'); return; }
+  editingAbonosDeudor.push({fecha, valor});
+  document.getElementById('md-ab-valor').value = '';
+  renderAbonosDeudorList();
+}
+
+function borrarAbonoDeudor(i) { editingAbonosDeudor.splice(i,1); renderAbonosDeudorList(); }
+
+async function eliminarDeudor() {
+  const id = document.getElementById('md-id').value;
+  const nombre = document.getElementById('md-nombre').value;
+  if (!id) return;
+  if (!confirm(`¿Eliminar a ${nombre}? Esta acción no se puede deshacer.`)) return;
+  try {
+    await sbDelete('deudores', id);
+    deudores = deudores.filter(d=>d.id!==id);
+    cerrarModal('modal-deudor');
+    renderTodo();
+    toast(`🗑 ${nombre} eliminado`);
+  } catch(e) { toast('Error: '+e.message); }
+}
+
+async function guardarDeudor() {
+  const id      = document.getElementById('md-id').value || uid();
+  const nombre  = document.getElementById('md-nombre').value.trim();
+  const concepto= document.getElementById('md-concepto').value.trim();
+  const deuda   = parseFloat(document.getElementById('md-deuda').value)||0;
+  const cuota   = parseFloat(document.getElementById('md-cuota').value)||0;
+  const fecha   = document.getElementById('md-fecha').value||null;
+  if (!nombre) { toast('Escribe un nombre'); return; }
+
+  // Si hay un abono pendiente sin agregar con "+", lo captura automáticamente
+  const abFecha = document.getElementById('md-ab-fecha').value;
+  const abValor = parseFloat(document.getElementById('md-ab-valor').value);
+  if (abFecha && abValor > 0) {
+    editingAbonosDeudor.push({fecha: abFecha, valor: abValor});
+    document.getElementById('md-ab-valor').value = '';
+  }
+
+  // Calcular total pagado para actualizar fecha próximo pago automáticamente
+  const totalAbonado = editingAbonosDeudor.reduce((a,ab)=>a+Number(ab.valor||0),0);
+  const saldoPendiente = Math.max(0, deuda - totalAbonado);
+
+  const obj = { id, user_code:userCode, nombre, concepto, deuda_original:deuda,
+    cuota_acordada:cuota, fecha_proximo_pago:fecha, abonos:editingAbonosDeudor,
+    updated_at:new Date().toISOString() };
+  try {
+    await sbUpsert('deudores', obj);
+    const idx = deudores.findIndex(d=>d.id===id);
+    if (idx>=0) deudores[idx]=obj; else deudores.push(obj);
+    cerrarModal('modal-deudor');
+    renderTodo();
+    const msg = saldoPendiente === 0
+      ? '✓ Guardado — ¡Deuda saldada! 🎉'
+      : `✓ Guardado — Saldo: ${COP(saldoPendiente)}`;
+    toast(msg);
+  } catch(e) { toast('Error: '+e.message); }
+}
+
+// ── MODALES CRIPTO ────────────────────────────────────────────────
+function abrirModalCripto() {
+  document.getElementById('mc-id').value = '';
+  ['mc-moneda','mc-cgid','mc-valor','mc-precio'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('modal-cripto').classList.add('open');
+}
+
+function editarCripto(id) {
+  const c = criptos.find(x=>x.id===id); if(!c) return;
+  document.getElementById('mc-id').value = c.id;
+  document.getElementById('mc-moneda').value = c.moneda;
+  document.getElementById('mc-cgid').value = c.coingecko_id||'';
+  document.getElementById('mc-valor').value = c.valor_hoy_usd||0;
+  document.getElementById('mc-precio').value = c.precio_respaldo||0;
+  document.getElementById('modal-cripto').classList.add('open');
+}
+
+async function guardarCripto() {
+  const id     = document.getElementById('mc-id').value || uid();
+  const moneda = document.getElementById('mc-moneda').value.trim().toUpperCase();
+  const cgid   = document.getElementById('mc-cgid').value.trim();
+  const valor  = parseFloat(document.getElementById('mc-valor').value)||0;
+  const precio = parseFloat(document.getElementById('mc-precio').value)||0;
+  if (!moneda) { toast('Escribe la moneda'); return; }
+  const obj = { id, user_code:userCode, moneda, coingecko_id:cgid,
+    valor_hoy_usd:valor, precio_respaldo:precio, updated_at:new Date().toISOString() };
+  try {
+    await sbUpsert('cripto_portafolio', obj);
+    const idx = criptos.findIndex(c=>c.id===id);
+    if (idx>=0) criptos[idx]=obj; else criptos.push(obj);
+    await cargarPreciosLive();
+    cerrarModal('modal-cripto'); renderTodo(); toast('✓ Guardado');
+  } catch(e) { toast('Error: '+e.message); }
+}
+
+// ── MODAL TX ──────────────────────────────────────────────────────
+function abrirModalTx() {
+  document.getElementById('tx-fecha').value = new Date().toISOString().slice(0,10);
+  document.getElementById('tx-tipo').value = 'COMPRA';
+  ['tx-moneda','tx-usd','tx-precio','tx-nota'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('modal-tx').classList.add('open');
+}
+
+async function guardarTx() {
+  const fecha  = document.getElementById('tx-fecha').value;
+  const tipo   = document.getElementById('tx-tipo').value;
+  const moneda = document.getElementById('tx-moneda').value.trim().toUpperCase();
+  const usd    = parseFloat(document.getElementById('tx-usd').value)||0;
+  const precio = parseFloat(document.getElementById('tx-precio').value)||0;
+  const nota   = document.getElementById('tx-nota').value.trim();
+  if (!moneda || !usd) { toast('Completa moneda y USD'); return; }
+  const obj = { id:uid(), user_code:userCode, fecha, tipo, moneda, usd_amount:usd,
+    precio_unitario:precio||null, cantidad:precio?usd/precio:null, nota:nota||null,
+    created_at:new Date().toISOString() };
+  try {
+    await sbUpsert('cripto_transacciones', obj);
+    txs.push(obj);
+    cerrarModal('modal-tx'); renderTodo(); toast('✓ Transacción guardada');
+  } catch(e) { toast('Error: '+e.message); }
+}
+
+// ── UTIL ──────────────────────────────────────────────────────────
+function cerrarModal(id) { document.getElementById(id).classList.remove('open'); }
+
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if (e.target===m) m.classList.remove('open'); });
+});
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2500);
+}
+
+// ── AUTO LOGIN ────────────────────────────────────────────────────
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('mf_code');
+  if (saved) {
+    document.getElementById('code-input').value = saved;
+    entrar();
+  }
+});
+</script>
+</body>
+</html>
